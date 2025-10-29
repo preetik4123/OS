@@ -1,0 +1,63 @@
+#include <iostream>
+#include <thread>
+#include <mutex>
+#include <chrono>
+#include <vector>
+using namespace std;
+
+int shared_data = 0;         
+int reader_count = 0;        
+mutex resource_mutex;        
+mutex reader_count_mutex;    
+
+void reader(int id) {
+    for (int i = 0; i < 2; ++i) {  
+        {
+            lock_guard<mutex> lock(reader_count_mutex);
+            reader_count++;
+            if (reader_count == 1)
+                resource_mutex.lock(); 
+        }
+
+        
+        cout << "Reader " << id << " is reading. Shared Data = " << shared_data << endl;
+        this_thread::sleep_for(chrono::milliseconds(200));
+        cout << "Reader " << id << " finished reading." << endl;
+
+        {
+            lock_guard<mutex> lock(reader_count_mutex);
+            reader_count--;
+            if (reader_count == 0)
+                resource_mutex.unlock(); 
+        }
+
+        this_thread::sleep_for(chrono::milliseconds(200));
+    }
+}
+
+void writer(int id) {
+    for (int i = 0; i < 2; ++i) {  
+        resource_mutex.lock();
+
+        shared_data += 10; 
+        cout << "Writer " << id << " is writing. Updated Shared Data = " << shared_data << endl;
+        this_thread::sleep_for(chrono::milliseconds(250));
+        cout << "Writer " << id << " finished writing." << endl;
+
+        resource_mutex.unlock();
+        this_thread::sleep_for(chrono::milliseconds(250));
+    }
+}
+
+int main() {
+    vector<thread> readers, writers;
+
+    for (int i = 1; i <= 3; ++i) readers.emplace_back(reader, i);
+    for (int i = 1; i <= 2; ++i) writers.emplace_back(writer, i);
+
+    for (auto &t : readers) t.join();
+    for (auto &t : writers) t.join();
+
+    cout << "\nFinal Shared Data = " << shared_data << endl;
+    return 0;
+}
