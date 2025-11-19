@@ -92,3 +92,112 @@ int main() {
 
     return 0;
 }
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+Easy One:-
+#include <iostream>
+using namespace std;
+
+// Maximum limits
+const int MAXP = 20;
+const int MAXR = 20;
+
+void calculateNeed(int need[][MAXR], int maxm[][MAXR],
+                   int allot[][MAXR], int P, int R)
+{
+    for (int i = 0; i < P; i++)
+        for (int j = 0; j < R; j++)
+            need[i][j] = maxm[i][j] - allot[i][j];
+}
+
+bool isSafe(int processes[], int avail[], int maxm[][MAXR],
+            int allot[][MAXR], int P, int R)
+{
+    int need[MAXP][MAXR];
+    calculateNeed(need, maxm, allot, P, R);
+
+    bool finish[MAXP] = {0};
+    int safeSeq[MAXP];
+
+    int work[MAXR];
+    for (int i = 0; i < R; i++)
+        work[i] = avail[i];
+
+    int count = 0;
+
+    while (count < P)
+    {
+        bool found = false;
+
+        for (int p = 0; p < P; p++)
+        {
+            if (!finish[p])
+            {
+                int j;
+                for (j = 0; j < R; j++)
+                    if (need[p][j] > work[j])
+                        break;
+
+                if (j == R)
+                {
+                    for (int k = 0; k < R; k++)
+                        work[k] += allot[p][k];
+
+                    safeSeq[count++] = p;
+                    finish[p] = 1;
+                    found = true;
+                }
+            }
+        }
+
+        if (!found)
+        {
+            cout << "\nSystem is NOT in safe state.\n";
+            return false;
+        }
+    }
+
+    cout << "\nSystem is in SAFE state.\nSafe sequence: ";
+    for (int i = 0; i < P; i++)
+        cout << "P" << safeSeq[i] << (i < P - 1 ? " -> " : "");
+    cout << "\n";
+
+    return true;
+}
+
+int main()
+{
+    int P, R;
+
+    cout << "Enter number of processes: ";
+    cin >> P;
+
+    cout << "Enter number of resources: ";
+    cin >> R;
+
+    int processes[MAXP];
+    for (int i = 0; i < P; i++)
+        processes[i] = i;
+
+    int allot[MAXP][MAXR];
+    int maxm[MAXP][MAXR];
+    int avail[MAXR];
+
+    cout << "\nEnter Allocation Matrix (" << P << "x" << R << "):\n";
+    for (int i = 0; i < P; i++)
+        for (int j = 0; j < R; j++)
+            cin >> allot[i][j];
+
+    cout << "\nEnter Maximum Need Matrix (" << P << "x" << R << "):\n";
+    for (int i = 0; i < P; i++)
+        for (int j = 0; j < R; j++)
+            cin >> maxm[i][j];
+
+    cout << "\nEnter Available Resources (" << R << " values):\n";
+    for (int j = 0; j < R; j++)
+        cin >> avail[j];
+
+    // Check system safety
+    isSafe(processes, avail, maxm, allot, P, R);
+
+    return 0;
+}
