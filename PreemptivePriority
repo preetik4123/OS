@@ -56,3 +56,61 @@ int main(){
 }
 -------------------------------------------------------------------
 //Non-Premptive
+#include <iostream>
+using namespace std;
+
+int main() {
+    int n;
+    cout << "Enter number of processes: ";
+    cin >> n;
+
+    int at[50], bt[50], pr[50], ct[50], tat[50], wt[50], pid[50];
+
+    for (int i = 0; i < n; i++) {
+        pid[i] = i + 1;
+        cout << "Enter AT, BT and Priority for P" << pid[i] << ": ";
+        cin >> at[i] >> bt[i] >> pr[i];
+    }
+
+    int completed = 0, current_time = 0;
+    bool done[50] = {false};
+
+    while (completed != n) {
+        int idx = -1;
+        int highest_priority = 100000;
+
+        // select highest priority process that has arrived
+        for (int i = 0; i < n; i++) {
+            if (!done[i] && at[i] <= current_time) {
+                if (pr[i] < highest_priority) {
+                    highest_priority = pr[i];
+                    idx = i;
+                }
+                else if (pr[i] == highest_priority) {
+                    if (at[i] < at[idx]) idx = i; // tie-break by arrival time
+                }
+            }
+        }
+
+        // if process found
+        if (idx != -1) {
+            current_time += bt[idx];      // non-preemptive → run full burst
+            ct[idx] = current_time;
+            tat[idx] = ct[idx] - at[idx];
+            wt[idx] = tat[idx] - bt[idx];
+            done[idx] = true;
+            completed++;
+        } 
+        else {
+            current_time++; // CPU idle
+        }
+    }
+
+    cout << "\nPID\tAT\tBT\tPR\tCT\tTAT\tWT\n";
+    for (int i = 0; i < n; i++) {
+        cout << pid[i] << "\t" << at[i] << "\t" << bt[i] << "\t"
+             << pr[i] << "\t" << ct[i] << "\t" << tat[i] << "\t" << wt[i] << endl;
+    }
+
+    return 0;
+}
