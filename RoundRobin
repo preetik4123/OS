@@ -1,0 +1,63 @@
+#include <iostream>
+using namespace std;
+
+int main() {
+    int n, tq;
+    cout << "Enter number of processes: ";
+    cin >> n;
+
+    cout << "Enter Time Quantum: ";
+    cin >> tq;
+
+    int at[50], bt[50], ct[50], tat[50], wt[50];
+    int remaining_bt[50];
+
+    for (int i = 0; i < n; i++) {
+        cout << "Enter Arrival Time and Burst Time for P" << (i + 1) << ": ";
+        cin >> at[i] >> bt[i];
+        remaining_bt[i] = bt[i];
+    }
+
+    int current_time = 0;
+    int completed = 0;
+
+    while (completed != n) {
+        bool executed = false;
+
+        for (int i = 0; i < n; i++) {
+
+            // process is available and not finished
+            if (remaining_bt[i] > 0 && at[i] <= current_time) {
+                executed = true;
+
+                // if burst left is more than time quantum
+                if (remaining_bt[i] > tq) {
+                    remaining_bt[i] -= tq;
+                    current_time += tq;
+                }
+                else {
+                    // finish process
+                    current_time += remaining_bt[i];
+                    remaining_bt[i] = 0;
+                    completed++;
+
+                    ct[i] = current_time;
+                    tat[i] = ct[i] - at[i];
+                    wt[i] = tat[i] - bt[i];
+                }
+            }
+        }
+
+        // if no process executed (CPU idle)
+        if (!executed)
+            current_time++;
+    }
+
+    cout << "\nPID\tAT\tBT\tCT\tTAT\tWT\n";
+    for (int i = 0; i < n; i++) {
+        cout << (i + 1) << "\t" << at[i] << "\t" << bt[i] << "\t"
+             << ct[i] << "\t" << tat[i] << "\t" << wt[i] << endl;
+    }
+
+    return 0;
+}
