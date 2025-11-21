@@ -1,0 +1,98 @@
+#include <iostream>
+using namespace std;
+
+void display(int frames[], int f) {
+    for(int i = 0; i < f; i++) {
+        if(frames[i] == -1)
+            cout << "- ";
+        else
+            cout << frames[i] << " ";
+    }
+    cout << endl;
+}
+
+void Optimal(int pages[], int n, int f) {
+    int frames[10];
+    int pageFault = 0;
+
+    // initialize frames
+    for(int i = 0; i < f; i++) {
+        frames[i] = -1;
+    }
+
+    // process pages
+    for(int i = 0; i < n; i++) {
+        int page = pages[i];
+        bool hit = false;
+
+        // check if page is already in frames
+        for(int j = 0; j < f; j++) {
+            if(frames[j] == page) {
+                hit = true;
+            }
+        }
+
+        // if not a hit → replacement needed
+        if(!hit) {
+            int pos = -1;
+
+            // check for empty frame
+            for(int j = 0; j < f; j++) {
+                if(frames[j] == -1) {
+                    pos = j;
+                    break;
+                }
+            }
+
+            // If no empty frame → choose the optimal frame to replace
+            if(pos == -1) {
+                int farthest = -1;
+
+                for(int j = 0; j < f; j++) {
+                    int k;
+
+                    // find next future use of frames[j]
+                    for(k = i + 1; k < n; k++) {
+                        if(pages[k] == frames[j])
+                            break;
+                    }
+
+                    // choose the one not used for longest in future
+                    if(k > farthest) {
+                        farthest = k;
+                        pos = j;
+                    }
+                }
+            }
+
+            frames[pos] = page;
+            pageFault++;
+        }
+
+        // output
+        cout << "Page " << page << " => ";
+        display(frames, f);
+        cout << (hit ? " (Hit)" : " (Fault)") << endl;
+    }
+
+    cout << "\nTotal Page Faults: " << pageFault << endl;
+}
+
+int main() {
+    int n, f;
+
+    cout << "Enter number of pages: ";
+    cin >> n;
+
+    int pages[50];
+    cout << "Enter page reference string:\n";
+    for(int i = 0; i < n; i++)
+        cin >> pages[i];
+
+    cout << "Enter number of frames: ";
+    cin >> f;
+
+    Optimal(pages, n, f);
+
+    return 0;
+}
