@@ -1,0 +1,85 @@
+#include <iostream>
+using namespace std;
+
+void display(int frames[], int f) {
+    for(int i = 0; i < f; i++) {
+        if(frames[i] == -1)
+            cout << "- ";
+        else
+            cout << frames[i] << " ";
+    }
+    cout << endl;
+}
+
+void LRU(int pages[], int n, int f) {
+    int frames[10], lastUsed[10];
+    int time = 0, pageFault = 0;
+
+    // Initialize frames and last used time
+    for(int i = 0; i < f; i++) {
+        frames[i] = -1;
+        lastUsed[i] = -1;
+    }
+
+    // Process pages
+    for(int i = 0; i < n; i++) {
+        int page = pages[i];
+        bool hit = false;
+
+        // Check hit
+        for(int j = 0; j < f; j++) {
+            if(frames[j] == page) {
+                hit = true;
+                lastUsed[j] = time;
+            }
+        }
+
+        // If not hit → perform replacement
+        if(!hit) {
+            int pos = -1, min = 100000;
+
+            for(int j = 0; j < f; j++) {
+                if(frames[j] == -1) {
+                    pos = j;      // Empty frame found
+                    break;
+                }
+                if(lastUsed[j] < min) {
+                    min = lastUsed[j];
+                    pos = j;      // Least Recently Used frame
+                }
+            }
+
+            frames[pos] = page;
+            lastUsed[pos] = time;
+            pageFault++;
+        }
+
+        time++;
+
+        // Output
+        cout << "Page " << page << " => ";
+        display(frames, f);
+        cout << (hit ? " (Hit)" : " (Miss)") << endl;
+    }
+
+    cout << "\nTotal Page Faults: " << pageFault << endl;
+}
+
+int main() {
+    int n, f;
+
+    cout << "Enter number of pages: ";
+    cin >> n;
+
+    int pages[50];
+    cout << "Enter page reference string:\n";
+    for(int i = 0; i < n; i++)
+        cin >> pages[i];
+
+    cout << "Enter number of frames: ";
+    cin >> f;
+
+    LRU(pages, n, f);
+
+    return 0;
+}
