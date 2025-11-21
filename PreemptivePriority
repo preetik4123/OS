@@ -1,0 +1,58 @@
+//Premptive
+#include <iostream>
+using namespace std;
+int main(){
+    int n;
+    cout<<"Enter the number of process:\t";
+    cin>>n;
+    int at[50],bt[50],ct[50],tat[50],wt[50],remaining_bt[50],priority[50];
+    for(int i = 0 ; i<n;i++){
+        cout<<"Enter the arrival time and burst time and also priority : \t";
+        cin>>at[i]>>bt[i]>>priority[i];
+        remaining_bt[i] = bt[i];
+    }
+    int completed = 0;
+    int current_time = 0;
+    while(completed != n){
+        int highest_priority = 100000;
+        int idx = -1;
+        for(int i = 0 ; i<n;i++){
+        if(remaining_bt[i] > 0 && at[i] <= current_time){
+            if(priority[i] < highest_priority){
+                highest_priority = priority[i];
+                idx = i;
+            }
+            else if(priority[i] == highest_priority){
+                if(at[i] < at[idx]){
+                    idx = i;
+                }
+            }
+        }
+    }
+    if(idx != -1){
+        remaining_bt[idx]--;
+        current_time++;
+        if(remaining_bt[idx] == 0){
+            completed++;
+            ct[idx] = current_time;
+            tat[idx] = ct[idx]-at[idx];
+            wt[idx] = tat[idx]-bt[idx];
+        }
+        
+    }
+    else{
+        current_time++;
+    }
+    }
+     cout << "\nPID\tAT\tBT\t\tPriority\tCT\tTAT\tWT\n";
+    for (int i = 0; i < n; i++) {
+        cout << (i+1) << "\t" << at[i] << "\t" << bt[i] << "\t"
+             << priority[i] << "\t\t" << ct[i] << "\t" 
+             << tat[i] << "\t" << wt[i] << endl;
+    }
+
+    return 0;
+    
+}
+-------------------------------------------------------------------
+//Non-Premptive
