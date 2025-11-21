@@ -48,3 +48,57 @@ int main() {
 
     return 0;
 }
+--------------------------------------------------------------------------------------------------------------------------------------------------
+Easy
+#include <iostream>
+#include <mutex>
+#include <condition_variable>
+#include <thread>
+#include <chrono>
+using namespace std;
+// #define SIZE 5
+// int buffer[SIZE];
+int SIZE;
+int buffer[100];
+int in = 0 ,out = 0 ,count = 0;
+condition_variable notFull,notEmpty;
+mutex mtx;
+
+void producer(int id,int producecount){
+    for(int item = 1 ; item <= producecount; item++){
+        unique_lock <mutex> lock(mtx);
+        notFull.wait(lock , [](){return count < SIZE; });
+        buffer[in] =  item;
+        cout<<"Producer "<<id<<" produced: "<<item<<endl;
+        in = (in+1)%SIZE;
+        count++;
+        notEmpty.notify_one();
+        this_thread::sleep_for(chrono::milliseconds(100));
+    }
+}
+void consumer(int id,int producecount){
+    for(int i = 0;i<producecount;i++){
+        unique_lock <mutex> lock(mtx);
+        notEmpty.wait(lock, [](){ return count > 0 ;});
+        int item = buffer[out];
+        cout<<"Consumer "<<id<<" consumed: "<<item<<endl;
+        out = (out+1)%SIZE;
+        count--;
+        notFull.notify_one();
+        this_thread::sleep_for(chrono::milliseconds(100));
+    }
+}
+int main(){
+    int producecount;
+    cout<<"Enter the size of the buffer : ";
+    cin >> SIZE;
+    
+    cout<<"Enter number of items producer should produce: ";
+    cin>>producecount;
+    thread p1(producer,1,producecount);
+    thread c1(consumer,1,producecount);
+    p1.join();
+    c1.join();
+   
+    
+}
